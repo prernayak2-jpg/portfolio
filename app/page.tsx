@@ -1,66 +1,44 @@
-import Image from "next/image";
+import { about } from "@/content/about";
+import SelfPortrait from "@/components/dashboard/SelfPortrait";
+import AboutSection from "@/components/dashboard/AboutSection";
 import styles from "./page.module.css";
 
+// Dashboard: the first screen is the self portrait and the intro, filling
+// the open Dashboard folder exactly. Scrolling down inside the folder shows
+// About Me. Projects are not shown here; they live on the Projects page (/projects).
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-         <h1>Hi, I'm Prerna 👋</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+    <main>
+      {/* ---------- First screen ---------- */}
+      <div className={styles.dashboard}>
+        <div className={styles.content}>
+          <div className={styles.intro}>
+            <h1>Hi, I&apos;m {about.name}</h1>
+            <p>{about.title}</p>
+          </div>
+
+          <div className={styles.portrait}>
+            <SelfPortrait
+              video="/me/self-portrait.mp4"
+              image="/me/self-portrait.jpg"
+              alt={`Self portrait drawing of ${about.name}`}
             />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
         </div>
-      </main>
-    </div>
+
+        {/* A hand-drawn "scroll" hint: About Me is further down. */}
+        <a href="#about" className={styles.scrollHint}>
+          <span>scroll</span>
+          <svg viewBox="0 0 24 48" aria-hidden="true">
+            {/* A slightly wobbly line and arrowhead, as if drawn by hand. */}
+            <path d="M12.5 2 C11 10 13.5 17 12 25 C10.8 31 12.6 37 12 44" />
+            <path d="M5 36 C8 39 10 41.5 12 44.5 C13.8 41 16 38.5 19.5 35.5" />
+          </svg>
+        </a>
+      </div>
+
+      {/* ---------- Below it, seen when scrolling down ---------- */}
+      <AboutSection />
+    </main>
   );
 }

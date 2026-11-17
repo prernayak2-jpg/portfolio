@@ -1,0 +1,124 @@
+/* ============================================================
+   The project board: cards pinned up in rows, like prints on a
+   wall. As many cards fit across as the folder's width allows;
+   more rows scroll inside the Projects folder.
+   ============================================================ */
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 56px 44px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px 40px 80px;
+}
+
+/* ---------- A card: a print on dotted notebook paper ---------- */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 14px 16px;
+  /* The dots: one tiny grey circle, repeated every 16px across and down. */
+  background-color: var(--background);
+  background-image: radial-gradient(circle, #b8b8b8 1px, transparent 1.2px);
+  background-size: 16px 16px;
+  background-position: 8px 8px;
+  border: 1px solid #d6d6d6;
+  /* A soft shadow under the paper, as if it's pinned a little off the wall. */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12), 0 10px 18px -12px rgba(0, 0, 0, 0.25);
+  /* Pinned up by hand, so a little crooked (each card's tilt is set in the code). */
+  transform: rotate(var(--tilt));
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover: the card straightens and lifts off the wall a little. */
+.card:hover,
+.card:focus-visible {
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14), 0 18px 28px -14px rgba(0, 0, 0, 0.35);
+}
+
+/* The pin at the top centre: a round head with a small highlight. */
+.pin {
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8a8a8a, #1a1a1a 70%);
+  box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- The photo ---------- */
+.photo {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2; /* landscape */
+  overflow: hidden;
+  border: 1px solid #999;
+}
+
+/* Black and white, like the rest of the site… */
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.05);
+  transition: filter 0.4s ease, transform 0.5s ease;
+}
+
+/* …until hovered: only that card shows its full colour, with a gentle zoom. */
+.card:hover .image,
+.card:focus-visible .image {
+  filter: none;
+  transform: scale(1.04);
+}
+
+/* The category label in the photo's top-left corner. */
+.tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: var(--background);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ---------- Under the photo ---------- */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 12px;
+}
+
+.id,
+.year {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #666;
+}
+
+.title {
+  font-family: var(--font-heading), cursive; /* the hand-drawn heading font */
+  font-size: 15px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+/* ---------- Phones: one card per row, tighter spacing ---------- */
+@media (max-width: 700px) {
+  .board {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 36px 20px 48px;
+  }
+}

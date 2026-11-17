@@ -1,150 +1,117 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
+/* Dashboard's first screen: fills its open folder exactly. About Me comes
+   after it, so it only shows when scrolling down. */
+.dashboard {
+  position: relative; /* the "scroll" hint is placed inside it */
   display: flex;
-  flex: 1;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  height: var(--folder-content-h);
+  overflow: hidden;
 }
 
-.main {
-  display: flex;
-  flex: 1;
+/* Drawing on the left, name next to it.
+   "grid-template-areas" names each spot, so the order on screen doesn't
+   depend on the order in the code. */
+.content {
+  flex: 1; /* the drawing + name get all the height there is */
+  min-height: 0; /* allowed to shrink below its natural size */
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "portrait intro";
+  align-items: center;
+  gap: 48px;
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* ---------- "scroll" hint at the bottom of the first screen ---------- */
+/* Placed on top of the screen's bottom edge (not in the layout), so the
+   drawing can be centred in the folder's full height. */
+.scrollHint {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  width: max-content;
+  margin: 0 auto; /* centred left to right */
+  display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-heading), cursive; /* the sketchy Rock Salt font */
+  font-size: 11px;
+  animation: bob 2s ease-in-out infinite; /* gently bobs up and down */
+}
+
+.scrollHint svg {
+  width: 16px;
+  height: 32px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+/* Visitors who asked their device for less motion: no bobbing. */
+@media (prefers-reduced-motion: reduce) {
+  .scrollHint {
+    animation: none;
+  }
+}
+
+/* The drawing is centred top to bottom in the folder (the grid's
+   align-items: center). Its height grows and shrinks with the screen:
+   15% bigger than it used to be (when it filled the folder minus about
+   114px of padding and the "scroll" hint), but never taller than the
+   folder itself minus a small margin, so it always fits without scrolling. */
+.portrait {
+  grid-area: portrait;
+  height: min(
+    calc((var(--folder-content-h) - 114px) * 1.15),
+    calc(var(--folder-content-h) - 16px)
+  );
+  min-height: 0;
 }
 
 .intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+  grid-area: intro;
 }
 
 .intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+  margin-bottom: 8px;
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
-}
-
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
-}
-
-.ctas a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
-}
-
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
-  gap: 8px;
-}
-
-a.secondary {
-  border-color: var(--button-secondary-border);
-}
-
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
+/* Phones: name first, then the drawing. */
+@media (max-width: 700px) {
+  .dashboard {
+    padding: 16px 0 64px; /* room at the bottom for the "scroll" hint */
   }
 
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
-}
-
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
+  .content {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "intro"
+      "portrait";
+    gap: 24px;
+    padding: 0 16px;
   }
 
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
+  .portrait {
+    justify-self: center;
+    height: 100%; /* phones: fills the space under the name */
   }
-}
-
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
-  }
-
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
-  }
-}
-
-.code {
-  font-family: var(--font-geist-mono);
-  font-size: 0.9em;
-  background: color-mix(in srgb, currentColor 8%, transparent);
-  padding: 0.1em 0.4em;
-  border-radius: 6px;
 }

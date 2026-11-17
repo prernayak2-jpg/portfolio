@@ -1,0 +1,91 @@
+/* Covers the whole screen, above the project window. */
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 200; /* above the project window (50) and the MENU button (100) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 80px;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Show the whole sheet, as large as fits on screen, without cropping. */
+.image {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100dvh - 140px);
+  object-fit: contain;
+  background: #fff;
+}
+
+.caption {
+  color: #ccc;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.close,
+.arrow {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #666;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.close {
+  top: 16px;
+  right: 16px;
+}
+
+.arrow {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.previous {
+  left: 16px;
+}
+
+.next {
+  right: 16px;
+}
+
+.arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+/* Phones: less padding, arrows move to the bottom. */
+@media (max-width: 700px) {
+  .viewer {
+    padding: 64px 12px 96px;
+  }
+
+  .arrow {
+    top: auto;
+    bottom: 24px;
+    transform: none;
+  }
+}
+
+/* Phones: leave room for the arrows along the bottom. */
+@media (max-width: 700px) {
+  .image {
+    max-height: calc(100dvh - 190px);
+  }
+}

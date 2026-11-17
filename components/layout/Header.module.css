@@ -1,0 +1,56 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: var(--header-height);
+  padding: 0 24px;
+  background: var(--outside); /* deep grey, like everything around the folders */
+  color: var(--outside-text);
+}
+
+/* Small text: the header is a slim strip (28px tall). */
+.name {
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* Email, LinkedIn and phone icons on the right. */
+.links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon {
+  display: flex;
+  opacity: 0.85;
+}
+
+.icon:hover {
+  opacity: 1;
+}
+
+.icon svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The dot of the "i" in LinkedIn's "in" is filled in. */
+.icon .dot {
+  fill: currentColor;
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 700px) {
+  .header {
+    padding: 0 16px;
+  }
+}

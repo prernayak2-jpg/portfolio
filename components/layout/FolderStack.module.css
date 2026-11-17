@@ -1,0 +1,166 @@
+/* ============================================================
+   The folder stack that frames every page. Sizes live in globals.css:
+     --fold-edge   height of a closed folder's band
+     --fold-tab-h  how far a tab sticks up
+   Each tab's left position (--tab-x) is set in FolderStack.tsx.
+   ============================================================ */
+.stack {
+  --end-w: 18px; /* width of a tab's sloped end */
+  --tab-scale: 2.5; /* spreads the tabs' left positions out on wide screens */
+  --line: 1.5px;
+
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--header-height));
+  padding-top: var(--fold-tab-h); /* room for the top folder's tab */
+  overflow: hidden;
+  background: var(--outside); /* the deep grey around the folders */
+}
+
+/* ---------- A folder ---------- */
+/* Closed: just its band. Open: it grows to take all the height that's
+   left, pushing the folders before it up and the ones after it down.
+   Changing flex-grow smoothly (the transition) is what makes it slide. */
+.folder {
+  position: relative;
+  flex: 0 0 var(--fold-edge);
+  transition: flex-grow 0.5s ease, transform 0.25s ease;
+}
+
+.open {
+  flex-grow: 1;
+}
+
+/* Hovering a closed folder lifts it a little, as if picking it. */
+.folder:not(.open):hover,
+.folder:not(.open):has(.tab:focus-visible) {
+  transform: translateY(-5px);
+}
+
+/* …and its paper reaches 5px further down, so the lifted folder still
+   meets the one in front instead of leaving a dark gap under it (the
+   extra bit slides behind the folder in front). */
+.folder:not(.open):hover .body,
+.folder:not(.open):has(.tab:focus-visible) .body {
+  bottom: -5px;
+}
+
+/* The folder's paper: nearly the full width of the screen, with its sides
+   showing just in from the screen's edges (--fold-inset), slightly
+   rounded top corners, and open at the bottom (the folder in front covers it). */
+.body {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--fold-inset);
+  right: var(--fold-inset);
+  overflow: hidden; /* while sliding open, the page is revealed bit by bit */
+  background: var(--background);
+  border: var(--line) solid currentColor;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  transition: bottom 0.25s ease; /* grows in step with the lift */
+}
+
+/* A closed folder's whole band is clickable. */
+.bandLink {
+  position: absolute;
+  inset: 0;
+}
+
+/* The small note at the right end of the band ("v" when open). */
+.note {
+  position: absolute;
+  top: 0;
+  right: 20px;
+  height: var(--fold-edge);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  pointer-events: none; /* clicks go to the band underneath */
+}
+
+/* ---------- The page inside the open folder ---------- */
+/* Below the folder's own band (where its note is), and above the tabs of
+   the next folder, which stick up into the bottom. It's exactly
+   --folder-content-h tall; taller pages scroll inside it. */
+.content {
+  position: absolute;
+  top: var(--fold-edge);
+  left: 0;
+  right: 0;
+  height: var(--folder-content-h);
+  overflow-y: auto;
+  scroll-behavior: smooth; /* links like the Dashboard's "scroll" hint glide down */
+}
+
+/* ---------- The tab ---------- */
+/* It sticks up out of the folder's top edge, over the folder above.
+   Its width comes from the name, so the text always fits. */
+.tab {
+  position: absolute;
+  bottom: calc(100% - var(--line)); /* sits over the folder's top line, hiding it */
+  left: calc(var(--fold-inset) + var(--tab-x) * var(--tab-scale));
+  height: var(--fold-tab-h);
+  display: flex;
+  outline: none; /* keyboard focus is shown by the folder lifting */
+}
+
+.tabEnd {
+  display: block;
+  width: var(--end-w);
+  height: 100%;
+  overflow: visible;
+}
+
+.flipped {
+  transform: scaleX(-1);
+}
+
+.paper {
+  fill: var(--background);
+}
+
+.outline {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--line);
+  vector-effect: non-scaling-stroke; /* same line thickness however it's stretched */
+}
+
+/* The straight middle: the paper, with the outline along its top only. */
+.tabMiddle {
+  display: flex;
+  align-items: center;
+  margin-bottom: calc(-1 * var(--line)); /* also covers the folder's top line */
+  margin-left: -1px; /* no hairline gaps between the three pieces */
+  margin-right: -1px;
+  padding: 0 4px;
+  background: var(--background);
+  border-top: var(--line) solid currentColor;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+/* The open folder's name in bold. */
+.open .tabMiddle {
+  font-weight: bold;
+}
+
+/* ---------- Phones ---------- */
+@media (max-width: 700px) {
+  .stack {
+    --end-w: 14px;
+    --tab-scale: 1;
+  }
+
+  .note {
+    display: none;
+  }
+
+  .tabMiddle {
+    font-size: 10px;
+  }
+}

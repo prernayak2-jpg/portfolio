@@ -1,0 +1,84 @@
+/* Covers the page and blurs everything behind it. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200; /* above the MENU button */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: color-mix(in srgb, var(--background) 40%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.window {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(1200px, 100%);
+  max-height: 100%;
+  padding: 48px 24px 24px;
+  border: 2px solid var(--foreground);
+  background: var(--background);
+}
+
+/* In full screen the window becomes the whole screen. */
+.window:fullscreen {
+  max-width: none;
+  width: 100vw;
+  height: 100dvh;
+  border: none;
+}
+
+.buttons {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.buttons button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--foreground);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Show the whole piece, as large as fits, without cropping. */
+.media {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100dvh - 170px);
+  object-fit: contain;
+}
+
+.window:fullscreen .media {
+  max-height: calc(100dvh - 72px);
+}
+
+@media (max-width: 700px) {
+  .backdrop {
+    padding: 12px;
+  }
+}
+
+/* Phones: a slimmer window so the piece can be bigger. */
+@media (max-width: 700px) {
+  .window {
+    padding: 52px 8px 8px;
+  }
+
+  .buttons button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .media {
+    max-height: calc(100dvh - 110px);
+  }
+}

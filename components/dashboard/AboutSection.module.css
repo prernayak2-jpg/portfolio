@@ -1,0 +1,224 @@
+/* About Me, below the Dashboard's first screen. */
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 32px 96px;
+}
+
+/* ---------- Intro: the statement and the CV button, centred ---------- */
+.intro {
+  max-width: 60ch;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.statement {
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.button {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 20px;
+  border: 1px solid currentColor;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+/* ---------- Details ---------- */
+/* Left column (Skills + Education) is narrower; History on the right is wider. */
+.details {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 48px;
+  margin-top: 72px;
+  align-items: start;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.heading {
+  font-size: 14px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+}
+
+/* ---------- Skills and Education: pinned-up dotted notebook paper ---------- */
+.paper {
+  position: relative;
+  padding: 32px 24px 24px;
+  /* The dots: one tiny grey circle, repeated every 16px across and down. */
+  background-color: var(--background);
+  background-image: radial-gradient(circle, #b8b8b8 1px, transparent 1.2px);
+  background-size: 16px 16px;
+  background-position: 8px 8px;
+  border: 1px solid #d6d6d6;
+  /* A soft shadow under the paper, as if it's pinned a little off the wall. */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12), 0 10px 18px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Pinned up by hand, so not quite straight. */
+.tiltLeft {
+  transform: rotate(-1.2deg);
+}
+
+.tiltRight {
+  transform: rotate(0.9deg);
+}
+
+/* The pin at the top centre: a round head with a small highlight. */
+.pin {
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8a8a8a, #1a1a1a 70%);
+  box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.skillGroup {
+  margin-bottom: 16px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  list-style: none;
+}
+
+.tags li {
+  padding: 4px 10px;
+  border: 1px solid #999;
+  background: var(--background); /* so the dots don't show through the tags */
+  font-size: 13px;
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------- History: a timeline ---------- */
+/* Each job is a row: the date on the left, then the job. The line and the
+   dots sit on the left edge of the job text, so together the rows make one
+   continuous line down, with a dot at every date. */
+.timeline {
+  list-style: none;
+}
+
+.job {
+  display: grid;
+  grid-template-columns: 120px 1fr; /* date column, job column */
+}
+
+.date {
+  padding: 2px 20px 0 0;
+  text-align: right;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: #666;
+  white-space: nowrap;
+}
+
+.jobText {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 0 32px 24px;
+  border-left: 1.5px solid currentColor; /* the timeline itself */
+}
+
+/* The line stops at the last job's dot instead of running on below it. */
+.job:last-child .jobText {
+  border-left-color: transparent;
+}
+
+.job:last-child .jobText::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -1.5px;
+  height: 8px;
+  border-left: 1.5px solid currentColor;
+}
+
+/* A dot on the line at each date. */
+.jobText::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: -6.75px; /* centred on the 1.5px line */
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  background: var(--background);
+}
+
+/* The most recent job (the first) gets a filled dot. */
+.job:first-child .jobText::before {
+  background: currentColor;
+}
+
+.description {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #444;
+}
+
+/* ---------- Phones: one column, tighter spacing ---------- */
+@media (max-width: 700px) {
+  .page {
+    padding: 32px 16px 64px;
+  }
+
+  .details {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    margin-top: 40px;
+  }
+
+  .paper {
+    padding: 28px 16px 16px;
+  }
+
+  /* Dates go above each job on narrow screens; the line stays on the left. */
+  .job {
+    grid-template-columns: 1fr;
+  }
+
+  .date {
+    padding: 0 0 4px 24px;
+    text-align: left;
+    border-left: 1.5px solid currentColor;
+  }
+
+  .job:first-child .date {
+    border-left-color: transparent;
+  }
+
+  .job:last-child .date {
+    border-left: 1.5px solid currentColor;
+  }
+}

@@ -1,12 +1,38 @@
 :root {
-  --background: #ffffff;
+  --background: #ffffff; /* the paper of the folders */
   --foreground: #171717;
+  --outside: #2b2b2b; /* deep grey: everything outside the folders */
+  --outside-text: #e6e6e6; /* text on the deep grey (the top bar) */
+  --header-height: 28px;
+
+  /* The folder stack (components/layout/FolderStack.tsx) */
+  --fold-count: 4; /* number of folders: keep in step with content/navigation.ts */
+  --fold-edge: 18px; /* height of a closed folder's band */
+  --fold-tab-h: 18px; /* how far a tab sticks up */
+  --fold-inset: 3vw; /* gap between the folders' sides and the screen's edges */
+  /* The space inside the open folder where a page's content sits. Pages
+     that fill it exactly (Dashboard, the gallery walls) use this height:
+     the screen, minus the top bar, the top tab, every folder's band (the
+     open one's band holds its label) and the tabs of the next folder. */
+  --folder-content-h: calc(
+    100dvh - var(--header-height) - var(--fold-count) * var(--fold-edge) - 2 * var(--fold-tab-h)
+  );
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --outside: #1f1f1f;
+  }
+}
+
+/* Phones: a slimmer header, so more of the screen is left for content. */
+@media (max-width: 700px) {
+  :root {
+    --header-height: 28px;
+    --fold-edge: 16px;
+    --fold-tab-h: 15px;
   }
 }
 
@@ -25,8 +51,8 @@ body {
   display: flex;
   flex-direction: column;
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--outside);
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,6 +61,15 @@ body {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+}
+
+/* Major headings in the hand-drawn font. Rock Salt is already heavy, so no
+   bold, and its tall strokes need extra line spacing. Smaller headings (h2)
+   stay in the body font; a few big ones opt in with var(--font-heading). */
+h1 {
+  font-family: var(--font-heading), "Comic Sans MS", cursive;
+  font-weight: normal;
+  line-height: 1.5;
 }
 
 a {

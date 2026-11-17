@@ -1,0 +1,801 @@
+/* ============================================================
+   Gallery wall drawn as an architectural elevation.
+   Every vertical position is a share of --wall-h (the wall's
+   height), so the drawing scales with the screen.
+   ============================================================ */
+
+.scroller {
+  /* The gallery fills the open folder. The sideways scrollbar sits inside
+     that height at the bottom, so the wall drawing is a little shorter
+     (--scrollbar-room) and ends just above it instead of being cut off. */
+  --scrollbar-room: 14px;
+  --wall-h: calc(var(--folder-content-h) - var(--scrollbar-room));
+  --line: var(--foreground);
+  --ceiling-y: 0.16; /* bottom of the exposed services, from the top */
+  --eye-y: 0.47; /* centre line that all frames hang on */
+  --floor-y: 0.86; /* floor line, from the top */
+
+  height: var(--folder-content-h);
+  overflow-x: auto;
+  overflow-y: hidden;
+  color: var(--line);
+  scrollbar-width: thin;
+}
+
+/* The hidden <svg> that only holds the pencil filter. */
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.wall {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: calc(var(--wall-h) * 0.336); /* space between frames: 33.6% of the wall's height */
+  width: max-content; /* as long as everything on it */
+  height: 100%;
+  padding: 0 calc(var(--wall-h) * 0.25);
+}
+
+/* ---------- Exposed ceiling, light rail, skirting and tiled floor ---------- */
+/* A row of repeated drawing modules, cut off at the end of the wall. */
+.ceiling,
+.floor {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.module {
+  flex: 0 0 640px;
+  height: 100%;
+}
+
+/* Keep lines the same thickness even though the drawing is stretched to fit. */
+.module * {
+  vector-effect: non-scaling-stroke;
+}
+
+.ceiling {
+  top: 0;
+  height: calc(var(--wall-h) * var(--ceiling-y));
+}
+
+.floor {
+  top: calc(var(--wall-h) * var(--floor-y));
+  height: calc(var(--wall-h) * (1 - var(--floor-y)));
+}
+
+/* Thicker line: slab underside and floor line. */
+.heavy {
+  stroke-width: 2;
+}
+
+/* Shapes that hide what's behind them (beams, duct). */
+.solid {
+  fill: var(--background);
+}
+
+/* Concrete slab: a light grey tone. */
+.slab {
+  fill: color-mix(in srgb, var(--line) 10%, var(--background));
+  stroke: none;
+}
+
+/* Concrete beams: same tone as the slab, with an outline. */
+.concrete {
+  fill: color-mix(in srgb, var(--line) 10%, var(--background));
+}
+
+/* The track the lights hang from, just under the ceiling. */
+.rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--wall-h) * (var(--ceiling-y) + 0.015));
+  border-top: 1px solid var(--line);
+}
+
+/* Skirting board: a thin line just above the floor. */
+.skirting {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--wall-h) * (var(--floor-y) - 0.025));
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Drawing title at the start ---------- */
+.titleBlock {
+  align-self: center;
+  margin-top: calc(var(--wall-h) * -0.1);
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.drawingTitle {
+  font-size: 28px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.drawingSub {
+  margin-top: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* End of the wall: a thick vertical line. */
+.wallEnd {
+  position: relative;
+  width: 0;
+  border-left: 3px solid var(--line);
+  margin: calc(var(--wall-h) * var(--ceiling-y)) 0 calc(var(--wall-h) * (1 - var(--floor-y)));
+}
+
+/* ---------- One bay = one piece with its light, label and bench ---------- */
+.bay {
+  /* The picture area has the exact shape of the photo/video (--ratio = width ÷ height).
+     The mat is an even border around it, so the whole frame grows to fit. */
+  --frame-h: calc(var(--wall-h) * var(--h));
+  --mat-w: calc(var(--frame-h) * 0.07); /* mat thickness, same on all four sides */
+  --picture-h: calc(var(--frame-h) - 2 * var(--mat-w));
+  --frame-w: calc(var(--picture-h) * var(--ratio) + 2 * var(--mat-w));
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: var(--frame-w);
+}
+
+/* ---------- Frame ---------- */
+.frame {
+  position: relative;
+  z-index: 1; /* in front of the light cone */
+  width: calc(var(--frame-w) - 2 * var(--mat-w));
+  height: var(--picture-h);
+  /* push the frame down so its centre sits on the eye line */
+  margin-top: calc(var(--wall-h) * var(--eye-y) - var(--frame-h) / 2);
+  padding: var(--mat-w); /* the mat (white border inside the frame) */
+  border: 2px solid var(--line);
+  box-sizing: content-box; /* the 2px frame line sits outside, so the picture keeps its shape */
+  background: var(--background);
+  /* a ↔ cursor hints that the piece can be opened larger */
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='14' fill='white' stroke='black' stroke-width='1.5'/%3E%3Cpath d='M8 16H24M8 16l4-4M8 16l4 4M24 16l-4-4M24 16l-4 4' stroke='black' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")
+      16 16,
+    ew-resize;
+}
+
+/* Thin inner line where the mat meets the artwork. */
+.mat {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: 1px solid var(--line); /* an outline takes no space, so the picture isn't squeezed */
+  overflow: hidden;
+}
+
+.media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------- Museum label under the frame ---------- */
+.label {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------- Spotlight + cone ---------- */
+.light {
+  position: absolute;
+  top: calc(var(--wall-h) * (var(--ceiling-y) + 0.015));
+  left: 0;
+  right: 0;
+  /* reach from the rail down to the bottom of the frame */
+  height: calc(
+    var(--wall-h) * (var(--eye-y) - var(--ceiling-y) - 0.015) + var(--frame-h) / 2
+  );
+  pointer-events: none;
+}
+
+.fixture {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: calc(var(--wall-h) * 0.05);
+  height: calc(var(--wall-h) * 0.05);
+  transform: translateX(-50%);
+  fill: var(--background);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.cone {
+  position: absolute;
+  top: calc(var(--wall-h) * 0.05);
+  bottom: 0;
+  left: -18%;
+  width: 136%;
+  height: calc(100% - var(--wall-h) * 0.05);
+  stroke: var(--line);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.cone line {
+  vector-effect: non-scaling-stroke;
+}
+
+/* A faint wash of light that fades as it travels down. */
+.coneFill {
+  stroke: none;
+  fill: color-mix(in srgb, var(--line) 6%, transparent);
+}
+
+/* ---------- Bench on the floor ---------- */
+.bench {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--wall-h) * (var(--floor-y) - 0.09));
+  width: calc(var(--wall-h) * 0.36);
+  height: calc(var(--wall-h) * 0.09);
+  transform: translateX(-50%);
+  fill: var(--background);
+  stroke: var(--line);
+  stroke-width: 1.5;
+  overflow: visible;
+}
+
+/* ---------- "Next room" / "Previous room" link ---------- */
+.roomLink {
+  align-self: flex-start;
+  /* centre it on the eye line, like the frames */
+  margin-top: calc(var(--wall-h) * var(--eye-y) - 24px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 48px;
+  padding: 0 20px;
+  border: 1px solid currentColor;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+  /* hidden until it scrolls into view, then it fades and slides in */
+  opacity: 0;
+  transform: translateX(-16px);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease,
+    background-color 0.2s ease;
+}
+
+.roomLinkVisible {
+  opacity: 1;
+  transform: none;
+}
+
+.roomLink:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.roomArrow {
+  font-size: 22px;
+  letter-spacing: 0;
+  transition: transform 0.2s ease;
+}
+
+/* The arrow nudges toward where it's going. */
+.roomLink:hover .roomArrow:last-child {
+  transform: translateX(4px);
+}
+
+.roomLink:hover .roomArrow:first-child {
+  transform: translateX(-4px);
+}
+
+/* ---------- Photo mosaic (Photography room) ---------- */
+/* The block is centred on the eye line. Its height is fixed; its width
+   comes from the photos (--width-factor), so every photo keeps its shape. */
+.mosaic {
+  --mosaic-h: calc(var(--wall-h) * 0.56);
+  --photo-gap: 6px;
+
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: calc(var(--wall-h) * var(--eye-y) - var(--mosaic-h) / 2);
+  width: calc(var(--mosaic-h) * var(--width-factor));
+  display: flex;
+  flex-direction: column;
+  gap: var(--photo-gap);
+}
+
+/* One row: each photo grows in proportion to its width ÷ height (--r),
+   which makes all photos in the row exactly the same height. */
+.mosaicRow {
+  display: flex;
+  gap: var(--photo-gap);
+}
+
+.photo {
+  flex: var(--r) 1 0;
+  aspect-ratio: var(--r);
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ============================================================
+   SKETCH LOOK
+   Used by both rooms: LOOK = "sketch" in GalleryWall.tsx (Creatives) and
+   look="sketch" in app/photography/page.tsx (Photography).
+   The same black-and-white line drawing as the "drawing" look, but in
+   soft grey pencil on a faint paper grain, with every line slightly
+   wobbly, as if drawn by hand. Only the artworks inside the frames keep
+   their colour and stay perfectly sharp.
+   The wobble is the #gallery-pencil filter defined in GalleryWall.tsx.
+   ============================================================ */
+.scroller[data-look="sketch"] {
+  --line: #555; /* soft graphite grey instead of black */
+  /* Faint paper grain: fine random noise, very light. */
+  background-color: var(--background);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Every drawn line gets the hand-drawn wobble. (Each ceiling and floor
+   piece is wobbled on its own, which keeps it quick to draw.) */
+.scroller[data-look="sketch"] .module,
+.scroller[data-look="sketch"] .rail,
+.scroller[data-look="sketch"] .skirting,
+.scroller[data-look="sketch"] .wallEnd,
+.scroller[data-look="sketch"] .fixture,
+.scroller[data-look="sketch"] .cone,
+.scroller[data-look="sketch"] .bench,
+.scroller[data-look="sketch"] .titleBlock {
+  filter: url(#gallery-pencil);
+}
+
+/* Lighter shading for the concrete slab and beams: just a grey wash. */
+.scroller[data-look="sketch"] .slab,
+.scroller[data-look="sketch"] .concrete {
+  fill: color-mix(in srgb, var(--line) 8%, transparent);
+}
+
+/* The frames: the frame line and the inner mat line are drawn as
+   separate, wobbly outlines on top, so the artwork itself isn't wobbled
+   and keeps its colour. */
+.scroller[data-look="sketch"] .frame {
+  border-color: transparent;
+}
+
+.scroller[data-look="sketch"] .frame::after,
+.scroller[data-look="sketch"] .frame::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  filter: url(#gallery-pencil);
+}
+
+/* Outer frame line. */
+.scroller[data-look="sketch"] .frame::after {
+  inset: -2px;
+  border: 2px solid var(--line);
+}
+
+/* Inner line where the mat meets the artwork. */
+.scroller[data-look="sketch"] .frame::before {
+  inset: var(--mat-w);
+  border: 1px solid var(--line);
+}
+
+.scroller[data-look="sketch"] .mat {
+  outline: none;
+}
+
+/* Photography: a hand-drawn frame around the whole photo mosaic. */
+.scroller[data-look="sketch"] .mosaic {
+  position: relative;
+}
+
+.scroller[data-look="sketch"] .mosaic::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  border: 1.5px solid var(--line);
+  pointer-events: none;
+  filter: url(#gallery-pencil);
+}
+
+/* Hand-written titles. */
+.scroller[data-look="sketch"] .titleBlock {
+  border: none;
+}
+
+.scroller[data-look="sketch"] .drawingTitle {
+  font-family: var(--font-heading), cursive;
+  letter-spacing: 0.04em;
+  color: #3a3a3a;
+}
+
+.scroller[data-look="sketch"] .drawingSub {
+  color: #666;
+}
+
+.scroller[data-look="sketch"] .label {
+  color: #555;
+}
+
+.scroller[data-look="sketch"] .label strong {
+  font-family: var(--font-heading), cursive;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* ============================================================
+   MUSÉE LOOK (optional)
+   Turned on by LOOK = "musee" in GalleryWall.tsx.
+   Only colours, materials and the ceiling/floor depth change here;
+   everything above stays the same. To undo: set LOOK back to
+   "drawing", or delete everything from this comment to the end.
+   ============================================================ */
+
+.scroller[data-look="musee"] {
+  /* Thinner ceiling and floor bands than the drawing look. */
+  --ceiling-y: 0.1; /* was 0.16 */
+  --floor-y: 0.9; /* was 0.86 */
+
+  /* Museum palette. It replaces the site colours inside the gallery only,
+     and stays the same in dark mode, like a real lit room. */
+  --background: #f1eee9; /* off-white mats */
+  --line: #3f3b37; /* dark grey for lines and text */
+  --concrete: #c6c3bd; /* concrete finish */
+  --concrete-dark: #aaa69f;
+  --oak: #b98654; /* wooden floor */
+  --oak-dark: #8a5c35;
+  --skylight: #dfe6ea; /* pale daylight through glass */
+  --leather: #8f5b3e;
+  /* Wooden frame: lit from the top-left, so each side gets its own shade. */
+  --wood-top: #8a5a33;
+  --wood-left: #7a4e2b;
+  --wood-right: #5c3a1f;
+  --wood-bottom: #4d3019;
+  --wood-bead: #d2ad7c; /* the carved bead moulding */
+
+  color: var(--line);
+  background: var(--concrete);
+}
+
+/* Concrete-texture wall: just the surface of concrete, with no panel joints
+   or tie holes. Three layers: a sandy grain, a medium mottle, and large
+   soft patches where the tone shifts. */
+.scroller[data-look="musee"] .wall {
+  background:
+    /* sandy grain */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.22 0 0 0 0 0.22 0 0 0 0 0.21 0 0 0 0.13 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    /* medium mottle */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.25 0 0 0 0 0.25 0 0 0 0 0.24 0 0 0 0.22 -0.06'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E"),
+    /* large soft patches */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='700'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.3 0 0 0 0 0.29 0 0 0 0.3 -0.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E"),
+    var(--concrete);
+  background-size: 260px 260px, 400px 400px, 900px 700px, auto;
+}
+
+/* Ceiling: the slab reads as a pale skylight, the services as painted steel. */
+.scroller[data-look="musee"] .ceiling {
+  stroke: color-mix(in srgb, var(--line) 55%, transparent);
+}
+
+.scroller[data-look="musee"] .slab {
+  fill: var(--skylight);
+}
+
+.scroller[data-look="musee"] .concrete,
+.scroller[data-look="musee"] .solid {
+  fill: #e6e3de;
+}
+
+/* Track rail: a slim dark steel line. */
+.scroller[data-look="musee"] .rail {
+  border-top: 3px solid #4d4a46;
+}
+
+/* Skirting: a dark band where the wall meets the floor. */
+.scroller[data-look="musee"] .skirting {
+  height: calc(var(--wall-h) * 0.02);
+  top: calc(var(--wall-h) * (var(--floor-y) - 0.02));
+  border-top: none;
+  background: #5b554f;
+}
+
+/* Wooden floor: horizontal planks running along the wall, laid in staggered
+   rows (each row's end joints fall in different places), with long grain
+   streaks and a soft sheen nearer the viewer.
+   The drawn tile lines are hidden; only the floor edge line stays. */
+.scroller[data-look="musee"] .floor {
+  stroke: var(--oak-dark);
+  background:
+    /* light and shade: darker by the wall, a little sheen toward you */
+    linear-gradient(to bottom, rgb(0 0 0 / 0.22), transparent 45%, rgb(255 255 255 / 0.1)),
+    /* plank pattern: 4 rows of 14px planks, 720px long, with staggered end joints
+       and a slightly different shade per row */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='56'%3E%3Cg fill='%23fff' fill-opacity='0.06'%3E%3Crect y='14' width='720' height='14'/%3E%3Crect y='42' width='720' height='14'/%3E%3C/g%3E%3Cg fill='%23000' fill-opacity='0.05'%3E%3Crect y='28' width='720' height='14'/%3E%3C/g%3E%3Cg stroke='%23462810' stroke-opacity='0.5' stroke-width='1'%3E%3Cpath d='M0 0.5H720M0 14.5H720M0 28.5H720M0 42.5H720'/%3E%3Cpath d='M120 0V14M480 0V14M300 14V28M660 14V28M40 28V42M400 28V42M210 42V56M570 42V56'/%3E%3C/g%3E%3C/svg%3E"),
+    /* wood grain streaks running along the planks */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008 0.45' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.17 0 0 0 0 0.07 0 0 0 0.4 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    var(--oak);
+  background-size: auto, 720px 56px, 600px 120px, auto;
+}
+
+.scroller[data-look="musee"] .floor line:not(.heavy) {
+  display: none;
+}
+
+/* Title: like the painted room sign on a museum wall. */
+.scroller[data-look="musee"] .titleBlock {
+  border: none;
+}
+
+.scroller[data-look="musee"] .drawingTitle {
+  font-family: var(--font-heading), cursive;
+  font-weight: normal;
+  letter-spacing: 0.04em;
+}
+
+.scroller[data-look="musee"] .drawingSub {
+  opacity: 0.75;
+}
+
+/* ---------- Decorative wooden frame ----------
+   Drawn around the outside of the frame, so the frame and picture keep
+   their exact sizes:
+   ::before = the wooden moulding. Each side has its own shade and the
+              sides meet at 45 degrees, like a mitred picture frame.
+   ::after  = a carved bead running round the middle of the moulding. */
+.scroller[data-look="musee"] .frame {
+  --wood-w: calc(var(--frame-h) * 0.05); /* moulding width */
+  border-color: var(--wood-bead); /* thin light lip next to the mat */
+  background: var(--background);
+  box-shadow:
+    0 calc(var(--wood-w) * 0.6) 20px calc(var(--wood-w) * 0.8) rgb(30 25 20 / 0.3), /* shadow on the wall */
+    inset 0 2px 6px rgb(0 0 0 / 0.2); /* the mat sits slightly inside the frame */
+}
+
+.scroller[data-look="musee"] .frame::before,
+.scroller[data-look="musee"] .frame::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+}
+
+.scroller[data-look="musee"] .frame::before {
+  inset: calc(-2px - var(--wood-w));
+  border: var(--wood-w) solid;
+  border-color: var(--wood-top) var(--wood-right) var(--wood-bottom) var(--wood-left);
+  /* a dark line on the outer edge and inner edge of the moulding */
+  box-shadow:
+    0 0 0 1px #2e1c0e,
+    inset 0 0 0 1px #2e1c0e;
+}
+
+.scroller[data-look="musee"] .frame::after {
+  inset: calc(-2px - var(--wood-w) * 0.55);
+  border: 2px dotted var(--wood-bead);
+  opacity: 0.85;
+}
+
+.scroller[data-look="musee"] .mat {
+  outline-color: color-mix(in srgb, var(--line) 25%, transparent);
+}
+
+/* Label: plain text straight on the wall, below the wooden frame. */
+.scroller[data-look="musee"] .label {
+  margin-top: calc(var(--frame-h) * 0.05 + 14px); /* clear the wooden frame */
+}
+
+/* Lights: dark fixtures and a warm glow instead of drawn cone edges. */
+.scroller[data-look="musee"] .fixture {
+  fill: #4d4a46;
+  stroke: #2f2c29;
+}
+
+.scroller[data-look="musee"] .cone line {
+  stroke: none;
+}
+
+.scroller[data-look="musee"] .coneFill {
+  fill: rgb(255 244 214 / 0.3);
+}
+
+/* Bench: leather cushion on an oak frame. */
+.scroller[data-look="musee"] .bench {
+  stroke: var(--oak-dark);
+  stroke-width: 6;
+}
+
+.scroller[data-look="musee"] .bench rect {
+  fill: var(--leather);
+  stroke: #6e4229;
+  stroke-width: 1.5;
+}
+
+/* End of the wall: the edge of a concrete pier, with a little shadow. */
+.scroller[data-look="musee"] .wallEnd {
+  border-left: 3px solid var(--concrete-dark);
+  box-shadow: -6px 0 12px rgb(30 25 20 / 0.15);
+}
+
+/* ============================================================
+   THEATRE LOOK
+   Used by the Photography room (look="theatre" in app/photography/page.tsx).
+   A dark room: charcoal walls, black stage floor, warm light on the photos.
+   Only colours and materials change; the layout is the same.
+   ============================================================ */
+
+.scroller[data-look="theatre"] {
+  --ceiling-y: 0.1;
+  --floor-y: 0.9;
+
+  --background: #1d1c1b; /* fills: ducts, beams */
+  --line: #6f6a64; /* soft grey lines, visible on dark */
+  --theatre-wall: #191817;
+  --stage: #231c17; /* dark stained wood floor */
+
+  color: #d8d2c9; /* light text */
+  background: var(--theatre-wall);
+}
+
+/* Charcoal wall with a faint grain, and a warm pool of light behind the photos. */
+.scroller[data-look="theatre"] .wall {
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 47%, rgb(255 228 180 / 0.06), transparent 70%),
+    var(--grain-dark),
+    var(--theatre-wall);
+  --grain-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: auto, 260px 260px, auto;
+}
+
+/* Ceiling: almost black, services just picked out. */
+.scroller[data-look="theatre"] .ceiling {
+  stroke: #3d3a37;
+}
+
+.scroller[data-look="theatre"] .slab {
+  fill: #0f0e0e;
+}
+
+.scroller[data-look="theatre"] .concrete,
+.scroller[data-look="theatre"] .solid {
+  fill: #1d1c1b;
+}
+
+.scroller[data-look="theatre"] .rail {
+  border-top: 3px solid #0c0b0b;
+}
+
+.scroller[data-look="theatre"] .skirting {
+  height: calc(var(--wall-h) * 0.02);
+  top: calc(var(--wall-h) * (var(--floor-y) - 0.02));
+  border-top: none;
+  background: #0c0b0b;
+}
+
+/* Floor: dark stained horizontal planks, like a stage. */
+.scroller[data-look="theatre"] .floor {
+  stroke: #0c0b0b;
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / 0.35), transparent 50%, rgb(255 255 255 / 0.03)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='56'%3E%3Cg fill='%23fff' fill-opacity='0.025'%3E%3Crect y='14' width='720' height='14'/%3E%3Crect y='42' width='720' height='14'/%3E%3C/g%3E%3Cg stroke='%23000' stroke-opacity='0.6' stroke-width='1'%3E%3Cpath d='M0 0.5H720M0 14.5H720M0 28.5H720M0 42.5H720'/%3E%3Cpath d='M120 0V14M480 0V14M300 14V28M660 14V28M40 28V42M400 28V42M210 42V56M570 42V56'/%3E%3C/g%3E%3C/svg%3E"),
+    var(--stage);
+  background-size: auto, 720px 56px, auto;
+}
+
+.scroller[data-look="theatre"] .floor line:not(.heavy) {
+  display: none;
+}
+
+/* Title: light serif lettering. */
+.scroller[data-look="theatre"] .titleBlock {
+  border: none;
+}
+
+.scroller[data-look="theatre"] .drawingTitle {
+  font-family: var(--font-heading), cursive;
+  font-weight: normal;
+  letter-spacing: 0.04em;
+}
+
+.scroller[data-look="theatre"] .drawingSub {
+  opacity: 0.6;
+}
+
+/* Photos: no frames, just a soft glow of light around the block. */
+.scroller[data-look="theatre"] .mosaic {
+  box-shadow: 0 0 90px 20px rgb(255 232 196 / 0.06);
+}
+
+.scroller[data-look="theatre"] .photo {
+  transition: filter 0.2s ease;
+  filter: brightness(0.92);
+}
+
+.scroller[data-look="theatre"] .photo:hover {
+  filter: brightness(1.05);
+}
+
+.scroller[data-look="theatre"] .wallEnd {
+  border-left: 3px solid #0c0b0b;
+}
+
+/* ============================================================
+   PHONES (all looks)
+   The wall already scales with the screen's height; on a narrow
+   screen the spacing and title just need to be tighter.
+   ============================================================ */
+@media (max-width: 700px) {
+  .scroller {
+    /* Swiping past the start or end of the wall shouldn't make the
+       browser go back a page. */
+    overscroll-behavior-x: contain;
+  }
+
+  .wall {
+    gap: calc(var(--wall-h) * 0.2);
+    padding: 0 calc(var(--wall-h) * 0.1);
+  }
+
+  .titleBlock {
+    padding: 12px 0;
+  }
+
+  .drawingTitle {
+    font-size: 20px;
+  }
+
+  .drawingSub {
+    font-size: 11px;
+  }
+
+  .roomLink {
+    height: 44px;
+    padding: 0 14px;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+  }
+
+  /* A little more of the wall for the photo mosaic. */
+  .mosaic {
+    --mosaic-h: calc(var(--wall-h) * 0.6);
+    --photo-gap: 4px;
+  }
+}

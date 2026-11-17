@@ -1,0 +1,45 @@
+/* One frame, the shape of the video (610 × 970). The video and the image
+   both fill it, so the swap happens without anything moving. */
+.frame {
+  position: relative;
+  height: 100%; /* as tall as the space the page gives it */
+  aspect-ratio: 610 / 970;
+  /* "Multiply" makes the white background of the video and image vanish
+     into the page colour, so no box edges show, only the pencil lines. */
+  mix-blend-mode: multiply;
+}
+
+/* Dark mode: flip the drawing to light lines on black, then "screen" makes
+   the black vanish into the dark page the same way. */
+@media (prefers-color-scheme: dark) {
+  .frame {
+    filter: invert(1);
+    mix-blend-mode: screen;
+  }
+}
+
+.media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The image sits on top of the video, hidden until the video ends. */
+.replay {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none; /* can't be clicked while hidden */
+  transition: opacity 0.4s ease;
+}
+
+.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
